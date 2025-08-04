@@ -1,5 +1,20 @@
 import os
 from .config import MAX_CHARS
+from google import genai
+
+schema_get_file_content = genai.types.FunctionDeclaration(
+    name="get_file_content",
+    description="Reads the content of a file in the specified directory, constrained to the working directory.",
+    parameters=genai.types.Schema(
+        type=genai.types.Type.OBJECT,
+        properties={
+            "file_path": genai.types.Schema(
+                type=genai.types.Type.STRING,
+                description="The directory where the file is located, relative to the working directory. If not provided, uses the working directory itself.",
+            ),
+        },
+    ),
+)
 
 
 def get_file_content(working_directory, file_path):
