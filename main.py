@@ -7,22 +7,11 @@ from functions.run_python import schema_run_python
 from functions.write_file import schema_write_file
 from functions.get_file_content import schema_get_file_content
 from call_function import call_function
+from functions.config import SYSTEM_PROMPT
+from generate_response import generate_ai_response
 
 def main():
-    system_prompt = """
-You are a helpful AI coding agent.
-
-When a user asks a question or makes a request, make a function call plan. You can perform the following operations:
-
-- List files and directories
-- Read file contents
-- Execute Python files with optional arguments
-- Write or overwrite files
-
-Remember that if a python file has no arguments, you HAVE TO call it without providing any arguments. Do not ask the user for arguments, just execute the file as is.
-
-All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
-"""
+    # Load environment variables
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
     args = sys.argv[1:]
@@ -41,7 +30,7 @@ All paths you provide should be relative to the working directory. You do not ne
     messages = []
 
 
-    response, messages = generate_ai_response(api_key, input_prompt, messages, system_prompt)
+    response, messages = generate_ai_response(api_key, input_prompt, messages, SYSTEM_PROMPT)
     
     if verbose:
         prompt_tokens = str(response.usage_metadata.prompt_token_count)
@@ -70,20 +59,6 @@ All paths you provide should be relative to the working directory. You do not ne
                 print(part.text)
     else:
         print("No response parts found")
-
-def generate_ai_response(api_key, input_prompt, messages, system_prompt):
-    available_functions = genai.types.Tool(
-    function_declarations=[
-        schema_get_files_info,schema_get_file_content,
-        schema_write_file, schema_run_python
-    ]
-)
-    client = genai.Client(api_key=api_key)
-    messages.append(genai.types.Content(role="user", parts=[genai.types.Part(text=input_prompt)]))
-    response = client.models.generate_content(model='gemini-2.0-flash-001', contents=messages, config=genai.types.GenerateContentConfig(
-    tools=[available_functions], system_instruction=system_prompt
-),)
-    return response, messages
 
 
 if __name__ == "__main__":
