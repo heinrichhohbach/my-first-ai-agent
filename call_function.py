@@ -35,7 +35,7 @@ def call_function(function_call_part, verbose=False):
     args['working_directory'] = WORKING_DIR
 
     function_to_call = functions[function_name]
-    print(f"DEBUG: Calling function {function_name} with args: {args}")
+    #print(f"DEBUG: Calling function {function_name} with args: {args}")
     function_result = function_to_call(**args)
 
     return genai.types.Content(
